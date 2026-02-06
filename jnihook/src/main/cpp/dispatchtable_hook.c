@@ -27,11 +27,11 @@ void init_dispatch_table() {
     dynamic->memalign = pika_dispatch_table->memalign;
     dynamic->posix_memalign = pika_dispatch_table->posix_memalign;
 #if defined(HAVE_DEPRECATED_MALLOC_FUNCS)
-    dynamic->pvalloc = predispatcher->pvalloc;
+    dynamic->pvalloc = pika_dispatch_table->pvalloc;
 #endif
     dynamic->realloc = pika_dispatch_table->realloc;
 #if defined(HAVE_DEPRECATED_MALLOC_FUNCS)
-    dynamic->valloc = predispatcher->valloc;
+    dynamic->valloc = pika_dispatch_table->valloc;
 #endif
     dynamic->malloc_iterate = pika_dispatch_table->malloc_iterate;
     dynamic->malloc_disable = pika_dispatch_table->malloc_disable;
@@ -66,7 +66,12 @@ int dispatch_table_hook(enum dispatch_table_type type, void *hook_func, void **c
             dynamic->free = hook_func;
             break;
         }
-            // You can add any function in here which should at the dispatch table
+        case REALLOC: {
+            *callee = pika_dispatch_table->realloc;
+            dynamic->realloc = hook_func;
+            break;
+        }
+        // You can add any function in here which should at the dispatch table
         default: {
             return 0;
         }

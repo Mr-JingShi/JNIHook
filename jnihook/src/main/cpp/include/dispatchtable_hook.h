@@ -1,3 +1,6 @@
+#ifndef JNIHOOK_DISPATCHTABLE_HOOK_H
+#define JNIHOOK_DISPATCHTABLE_HOOK_H
+
 #include <android/log.h>
 #include <stdio.h>
 #include <malloc.h>
@@ -10,15 +13,13 @@
 enum dispatch_table_type {
     MALLOC,
     CALLOC,
-    FREE
+    FREE,
+    REALLOC
 };
 
 void init_dispatch_table();
 
 int dispatch_table_hook(enum dispatch_table_type type, void *hook_func, void **callee);
-
-#ifndef JNIHOOK_DISPATCHTABLE_HOOK_H
-#define JNIHOOK_DISPATCHTABLE_HOOK_H
 
 typedef void *(*MallocCalloc)(size_t, size_t);
 
@@ -47,6 +48,12 @@ typedef void (*MallocMallocEnable)();
 typedef int (*MallocMallopt)(int, int);
 
 typedef void *(*MallocAlignedAlloc)(size_t, size_t);
+
+// valloc(3) and pvalloc(3) were removed from POSIX 2004. We do not include them
+// for LP64, but the symbols remain in LP32 for binary compatibility.
+#if !defined(__LP64__)
+ #define HAVE_DEPRECATED_MALLOC_FUNCS 1
+#endif
 
 #if defined(HAVE_DEPRECATED_MALLOC_FUNCS)
 typedef void* (*MallocPvalloc)(size_t);
